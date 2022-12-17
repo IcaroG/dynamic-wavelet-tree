@@ -3,7 +3,7 @@ import math
 node_id = 0
 
 
-def bitstr(x, nbits):
+def bin_str(x, nbits):
     ret = nbits * ['0']
     while nbits:
         nbits -= 1
@@ -30,14 +30,14 @@ class Node:
 
 class Huff:
     def __init__(self, ab):
-        self.absize = len(ab)
-        nbits = int(math.ceil(math.log2(self.absize)))
-        self.raw_codes = {ab[i]:bitstr(i, nbits) for i in range(self.absize)}
+        self.ab_size = len(ab)
+        nbits = int(math.ceil(math.log2(self.ab_size)))
+        self.raw_codes = {ab[i]:bin_str(i, nbits) for i in range(self.ab_size)}
         self.ab = {}
         assert '#' not in ab
         self.root =  Node('#')
-        self.zeronode = self.root
-        self.sortednodes = [self.root]
+        self.null_node = self.root
+        self.sorted_nodes = [self.root]
     
     def update(self, c):
         if c in self.ab:
@@ -50,29 +50,29 @@ class Huff:
         else:
             cnode = Node(c=c, freq=1)
             self.ab[c] = cnode
-            zeronode = self.zeronode #sortednodes[0]
-            zeronode_par = zeronode.par
+            null_node = self.null_node #sortednodes[0]
+            null_node_par = null_node.par
             par = Node()
-            par.setchd(zeronode, 0)
+            par.setchd(null_node, 0)
             par.setchd(cnode, 1)
-            if zeronode_par:
-                zeronode_par.setchd(par, 0 if zeronode_par.chd[0] == zeronode else 1)
+            if null_node_par:
+                null_node_par.setchd(par, 0 if null_node_par.chd[0] == null_node else 1)
             else:
                 self.root = par
             cur = cnode
             while cur.par:
                 cur = cur.par
                 cur.freq += 1
-            self.sortednodes[1:1] = [cnode, par]
-            n = len(self.sortednodes)
+            self.sorted_nodes[1:1] = [cnode, par]
+            n = len(self.sorted_nodes)
             for i in range(n-1):
                 j = self.succ(i)
                 if j != i:
                     assert j < n
-                    assert self.sortednodes[j].freq < self.sortednodes[i].freq
-                    assert j==n-1 or self.sortednodes[j+1].freq >= self.sortednodes[i].freq
-                    node_i = self.sortednodes[i]
-                    node_j = self.sortednodes[j]
+                    assert self.sorted_nodes[j].freq < self.sorted_nodes[i].freq
+                    assert j==n-1 or self.sorted_nodes[j+1].freq >= self.sorted_nodes[i].freq
+                    node_i = self.sorted_nodes[i]
+                    node_j = self.sorted_nodes[j]
                     par_i = node_i.par
                     pos_i = 0 if par_i.chd[0] == node_i else 1
                     assert par_i.chd[pos_i] == node_i
@@ -85,26 +85,26 @@ class Huff:
                         while cur.par:
                             cur = cur.par
                             cur.freq = cur.chd[0].freq + cur.chd[1].freq
-                    self.sortednodes[i] = node_j
-                    self.sortednodes[j] = node_i
-        n = len(self.sortednodes)
-        assert self.sortednodes[n-1].par == None
+                    self.sorted_nodes[i] = node_j
+                    self.sorted_nodes[j] = node_i
+        n = len(self.sorted_nodes)
+        assert self.sorted_nodes[n-1].par == None
         for i in range(0,n-1,2):
-            assert self.sortednodes[i].par == self.sortednodes[i+1].par
-            assert self.sortednodes[i].freq <= self.sortednodes[i+1].freq
+            assert self.sorted_nodes[i].par == self.sorted_nodes[i+1].par
+            assert self.sorted_nodes[i].freq <= self.sorted_nodes[i+1].freq
         
     def succ(self, i):
         l = i+1
-        r = len(self.sortednodes)
+        r = len(self.sorted_nodes)
         assert l < r   
-        if self.sortednodes[r-1].freq < self.sortednodes[i].freq:
+        if self.sorted_nodes[r-1].freq < self.sorted_nodes[i].freq:
             return r-1
-        if self.sortednodes[l].freq >= self.sortednodes[i].freq:
+        if self.sorted_nodes[l].freq >= self.sorted_nodes[i].freq:
             return i
         # result in [l,r)
         while (r-l) > 1:
             m = (l + r) // 2
-            if self.sortednodes[m].freq < self.sortednodes[i].freq:
+            if self.sorted_nodes[m].freq < self.sorted_nodes[i].freq:
                 l = m
             else:
                 r = m 
@@ -118,11 +118,11 @@ class Huff:
         self.print_tree(root.chd[0], level+1)
         self.print_tree(root.chd[1], level+1)
         
-    def printhuff(self):
+    def print_huff(self):
         print("--------------------------------")
         self.print_tree(self.root)
         print("sorted_nodes:")
-        for node in self.sortednodes:
+        for node in self.sorted_nodes:
             print("id=%d freq=%d"%(node.id, node.freq))
         print("--------------------------------")
 
@@ -141,7 +141,7 @@ class Huff:
         return "".join(code[::-1])
     
     def null_code(self):
-        cur = self.zeronode 
+        cur = self.null_node 
         code = []
         while cur.par:
             par = cur.par
@@ -161,39 +161,39 @@ def encode(txt, ab):
         else: 
             code = code + hc.null_code() + hc.char_code(txt[i]) + " "
         hc.update(txt[i])
-        hc.printhuff()
+        hc.print_huff()
     return hc,code
         
 def decode(code, ab):
     n = len(code)
     i = 0
     hc = Huff(ab)
-    abbits = int(math.ceil(math.log2(len(ab))))
-    raw_codes = {bitstr(i, abbits):ab[i] for i in range(len(ab))}
+    ab_nbits = int(math.ceil(math.log2(len(ab))))
+    raw_codes = {bin_str(i, ab_nbits):ab[i] for i in range(len(ab))}
     txt = ""
     cur = hc.root
-    cw = ""
+    codeword = ""
     while i < n or cur != hc.root:
         if i < n and code[i] == ' ':
             i += 1
             continue
         if cur.is_leaf():
-            if cur == hc.zeronode:
-                cw = code[i:i+abbits]
-                assert cw in raw_codes
-                c = raw_codes[cw]       
+            if cur == hc.null_node:
+                codeword = code[i : i + ab_nbits] 
+                assert codeword in raw_codes
+                c = raw_codes[codeword]       
                 txt += c
-                i += abbits 
+                i += ab_nbits 
             else:
                 c = cur.c 
                 txt += c
                 #i += 1
             hc.update(c)
-            cw = ""
+            codeword = ""
             cur = hc.root
         else:
             cur = cur.chd[int(code[i])]
-            cw += code[i]
+            codeword += code[i]
             i += 1 
     return txt       
 
