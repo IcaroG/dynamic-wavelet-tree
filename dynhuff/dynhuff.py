@@ -21,7 +21,7 @@ class Node:
         self.par = None
         self.chd = [None, None]
         
-    def setchd(self, chd, pos):
+    def set_chd(self, chd, pos):
         self.chd[pos] = chd
         chd.par = self      
         
@@ -53,10 +53,10 @@ class Huff:
             null_node = self.null_node #sortednodes[0]
             null_node_par = null_node.par
             par = Node()
-            par.setchd(null_node, 0)
-            par.setchd(cnode, 1)
+            par.set_chd(null_node, 0)
+            par.set_chd(cnode, 1)
             if null_node_par:
-                null_node_par.setchd(par, 0 if null_node_par.chd[0] == null_node else 1)
+                null_node_par.set_chd(par, 0 if null_node_par.chd[0] == null_node else 1)
             else:
                 self.root = par
             cur = cnode
@@ -79,8 +79,8 @@ class Huff:
                     par_j = node_j.par
                     pos_j = 0 if par_j.chd[0] == node_j else 1
                     assert par_j.chd[pos_j] == node_j
-                    par_i.setchd(node_j, pos_i)
-                    par_j.setchd(node_i, pos_j)
+                    par_i.set_chd(node_j, pos_i)
+                    par_j.set_chd(node_i, pos_j)
                     for cur in [node_i, node_j]:
                         while cur.par:
                             cur = cur.par
