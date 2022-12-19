@@ -1,0 +1,167 @@
+%        File: planoic.tex
+%     Created: Fri Apr 18 01:00 PM 2014 B
+% Last Change: Fri Apr 18 01:00 PM 2014 B
+%
+\documentclass[12pt, a4paper, oneside]{article}
+
+\usepackage{amsfonts}
+\usepackage[]{amsmath}
+\usepackage{amssymb}
+\usepackage[brazil]{babel}
+\usepackage[pt-BR]{datetime2}
+\usepackage[left=20mm,right=20mm,top=25mm,bottom=25mm]{geometry}
+\usepackage[]{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{multirow}
+\usepackage{paralist}
+\usepackage{setspace}
+\usepackage[compact]{titlesec}
+\usepackage[]{url}
+\usepackage{xspace}
+\usepackage{mathpazo}
+\usepackage{txfonts}
+
+\titleformat{\section}
+  {\Large\bfseries}{\thesection.}{.5em}{}[\hrule\bigskip]
+\titleformat{\subsection}
+  {\bfseries}{\thesection.}{.5em}{}
+%\renewcommand{\baselinestretch}{1.5} 
+%\renewcommand{\rmdefault}{phv} % Arial
+%\renewcommand{\sfdefault}{phv} % Arial
+\setlength{\parskip}{6pt}
+
+\newcommand{\A}{\ensuremath{\mathtt{A}}\xspace}
+\newcommand{\C}{\ensuremath{\mathtt{C}}\xspace}
+\newcommand{\G}{\ensuremath{\mathtt{G}}\xspace}
+\newcommand{\T}{\ensuremath{\mathtt{T}}\xspace}
+
+\newcommand{\str}[1]{\ensuremath{\mathtt{#1}}\xspace}
+\newcommand{\strset}[1]{\ensuremath{\mathcal{#1}}\xspace}
+\newcommand{\ssS}{\strset{S}}
+\newcommand{\seq}[1]{\ensuremath{\mathtt{#1}}\xspace}
+
+\newcommand{\rank}{\ensuremath{\mathrm{rank}}\xspace}
+\newcommand{\select}{\ensuremath{\mathrm{select}}\xspace}
+\newcommand{\BWT}{\ensuremath{\mathrm{BWT}}\xspace}
+
+\newcommand{\X}{\ensuremath{\medbullet}\xspace}
+\newcommand{\x}{\ensuremath{\medcirc}\xspace}
+
+
+
+
+\newcommand{\thetitle}{Título provisório}
+\newcommand{\workarea}{Teoria da Computação~/~Algoritmos}
+\newcommand{\major}{Ciência da Computação}
+\newcommand{\studenttitle}{Aluno}
+\newcommand{\student}{Ícaro Julião Monteiro Guerra}
+\newcommand{\studentemail}{ijmg@cin.ufpe.br}
+\newcommand{\advisertitle}{Orientador}
+\newcommand{\adviser}{Paulo Fonseca}
+\newcommand{\adviseremail}{paguso@cin.ufpe.br}
+
+
+%\bibliography{projeto}
+
+
+\begin{document}
+%\onehalfspacing
+
+%\maketitle
+
+{\Large
+\thispagestyle{empty}
+\begin{center}
+\begin{tabular}{l p{10cm}}
+	\includegraphics[width=3cm]{cin-logo.png} &
+	\vspace{-25mm}
+	Universidade Federal de Pernambuco\newline
+	Centro de Informática\newline
+	Graduação em \major
+\end{tabular}
+
+\vfill
+
+{\huge \bfseries \thetitle}
+\\
+\medskip
+{\bfseries\itshape Proposta de Trabalho de Graduação}
+
+\vfill
+
+\bigskip
+
+	\begin{tabular}{r p{95mm}}
+	\textbf{\studenttitle: } & \student \newline(\texttt{\studentemail}) \\ 
+\textbf{\advisertitle: } & \adviser \newline(\texttt{\adviseremail})
+\\
+	\textbf{Área: } & \workarea 
+\end{tabular}
+
+	\vspace{3cm}
+\DTMlangsetup{showdayofmonth=false}
+Recife, \today 
+\DTMlangsetup{showdayofmonth=true}
+\end{center}
+}
+
+\normalfont
+
+\clearpage
+\setcounter{page}{1}
+\section*{Resumo}
+
+Resumo aqui
+
+\clearpage
+\section*{Cronograma de atividades}
+
+
+\begin{center}
+	\begin{tabular}{| l || c | c | c | c | c | c | c | c | c | c | c | c | c | c | c |  c | c | c | c | c |}
+		\hline
+		& \multicolumn{2}{| c |}{Dez} & \multicolumn{4}{| c |}{Jan} & \multicolumn{4}{| c |}{Fev} & \multicolumn{4}{| c |}{Mar} & \multicolumn{3}{| c |}{Abr} \\\hline\hline
+		Preparação da proposta & \X & \X & & & & & & & & & & & & & & & \\\hline 
+		Revisão bibliográfica$^\dagger$ & \X & \X & \x & \x & \x & \x & \x & \x & & & & & & & & &\\\hline 
+		Implementação das estruturas & & & \X & \X & \X & \X & \X & \X & \X & \X & \X & & & & &  &\\\hline 
+		Realização dos testes$^\ddagger$ & & & & \x & \x & \x & \x & \x & \x  & \X & \X & \X & & & & & \\\hline 
+		Redação e revisão da monografia & & & & & & & & & & & \X & \X & \X & \X & & & \\\hline 
+		Preparação da apresentação & & & & & & & & & & & & & & & \X & \X & \X \\\hline 
+\hline
+	\end{tabular}
+\begin{minipage}{0.6\linewidth}
+\noindent($\dagger$) \X = levantamento inicial, \x= aprofundamento\newline
+\noindent($\ddagger$) \X= experimentos formais , \x = testes \textit{ad hoc} unitários\newline
+\end{minipage}
+
+\end{center}
+
+
+\clearpage
+\section*{Possíveis Avaliadores}
+
+\begin{enumerate}
+\item Prof. Nivan Ferreira
+\item Prof. Gustavo Carvalho
+\end{enumerate}
+
+
+%\clearpage
+\section*{Assinaturas}
+
+\vfill
+\begin{center}
+	Recife, \today 
+
+	\vspace{3cm}
+	\rule{10cm}{.5pt}\\
+	\textbf{\studenttitle:} \student\\
+
+	\vspace{3cm}
+	\rule{10cm}{.5pt}\\
+	\textbf{\advisertitle:} \adviser\\
+\end{center}
+\vfill
+
+\end{document}
+
