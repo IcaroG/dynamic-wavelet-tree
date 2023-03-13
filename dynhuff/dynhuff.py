@@ -1,12 +1,14 @@
 import math
-import string
+from timeit import default_timer as timer
+import os
 from typing import Optional
 from bitstring import BitArray
 
 node_id = 0
 NULL_CHAR = '#'
-bit_to_str = {0:'0b0', 1: '0b1', '0': '0b0', '1': '0b1'}
+BIT_TO_STR = {0:'0b0', 1: '0b1', '0': '0b0', '1': '0b1'}
 MAX_DISTANCE_LCA = 0
+TEST_DIR = "./tests"
 input_txt = "should be working for now"
 
 def bin_str(x, nbits):
@@ -76,11 +78,9 @@ class Huff:
             i = j + 1
         n = len(self.sorted_nodes)
         assert self.sorted_nodes[n-1].par == None
-        self.assert_wavelet(input_txt[:self.sz])
         for i in range(0,n-1):
             assert self.sorted_nodes[i].par == self.sorted_nodes[i^1].par
             assert self.sorted_nodes[i].freq <= self.sorted_nodes[i+1].freq
-        
     
     def add_bit(self, c):
         goal_c = c
@@ -91,7 +91,7 @@ class Huff:
             next_pos = cur.alph[goal_c]
             if not(c in cur.alph):
                 cur.alph[c] = next_pos
-            cur.bit.append(bit_to_str[next_pos])
+            cur.bit.append(BIT_TO_STR[next_pos])
             cur = cur.chd[next_pos]
 
     def update_leaf(self, c):
@@ -197,10 +197,10 @@ class Huff:
                     if get_all or count in old_pos:
                         new_pos.add(i)
                     else:
-                        new_bit.append(bit_to_str[bit])
+                        new_bit.append(BIT_TO_STR[bit])
                     count += 1
                 else:
-                    new_bit.append(bit_to_str[bit])
+                    new_bit.append(BIT_TO_STR[bit])
                 i += 1
             cur.bit = new_bit
             get_all = False
@@ -247,7 +247,7 @@ class Huff:
                     del changes[idx]
                 if bit == nxt_bit:
                     count += 1
-                new_bit_array.append(bit_to_str[bit])
+                new_bit_array.append(BIT_TO_STR[bit])
                 idx += 1
             rest = 0
             for idx, value in changes.items():
@@ -351,14 +351,13 @@ def encode(txt, ab):
     hc = Huff(ab)
     code = ""
     for i in range(n):
-        print("addind txt[%d]=%c"%(i, txt[i]))
+        # print("addind txt[%d]=%c"%(i, txt[i]))
         if hc.has_char(txt[i]):
             code = code + hc.char_code(txt[i]) + " "
         else: 
             code = code + hc.null_code() + hc.char_code(txt[i]) + " "
         hc.update(txt[i])
-        hc.print_huff()
-    print('MAX DISTANCE TO LCA =', MAX_DISTANCE_LCA)
+        # hc.print_huff()
     return hc,code
         
 def decode(code, ab):
@@ -394,12 +393,16 @@ def decode(code, ab):
             i += 1 
     return txt       
 
-ab = string.ascii_lowercase + ' '
-hc, code = encode(input_txt, ab)
-print("code =", code)
 
-decoded = decode(code, ab)
-print("decoded txt =",decoded)
-assert decoded == input_txt
-
-
+files = [f for f in os.listdir(TEST_DIR) if os.path.isfile(os.path.join(TEST_DIR, f))]
+for f in files: 
+    txt = open(os.path.join(TEST_DIR, f), "r").read()
+    ab = list(set(txt))
+    start = timer()
+    hc, code = encode(txt, ab)
+    end = timer()
+    print("Took {:f}s to process {:s}, had a max distance of {:d} for an alphabet of size {:d}".format(end - start, f, MAX_DISTANCE_LCA, len(ab)))
+    hc.assert_wavelet(txt)
+    decoded = decode(code, ab)
+    # print("decoded txt =",decoded)
+    assert decoded == txt
