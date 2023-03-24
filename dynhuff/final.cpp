@@ -1,12 +1,14 @@
 #include <bits/stdc++.h>
 
 #include <dynamic/dynamic.hpp>
+#include <filesystem>
 
 using namespace std;
 
-const char NULL_CHAR = '#';
-const int BLOCK_SIZE = 512;
+const char NULL_CHAR = 128;
 
+int swaps = 0;
+int totalChangedBits = 0;
 int nodeId = 0;
 
 vector<bool> binCode(int x, int nBits) {
@@ -30,8 +32,6 @@ string mapToString(const unordered_map<char, int> &mp) {
              }) +
          "}";
 }
-
-int abacaba;
 
 struct TNode {
   int id, freq;
@@ -66,7 +66,6 @@ struct DynamicWaveletHuff {
 
   DynamicWaveletHuff(const set<char> &_ab) {
     abSize = _ab.size();
-    abacaba = abSize;
     nBits = 32 - __builtin_clz(abSize - 1);
     assert(!_ab.count(NULL_CHAR));
     for (int idx = 0; auto c : _ab) {
@@ -101,12 +100,6 @@ struct DynamicWaveletHuff {
         nodeUpdate = nodeUpdate->par;
       }
       i = j + 1;
-    }
-    n = sortedNodes.size();
-    assert(sortedNodes[n - 1]->par == NULL);
-    for (int i = 0; i < n - 1; i += 2) {
-      assert(sortedNodes[i]->par == sortedNodes[i ^ 1]->par);
-      assert(sortedNodes[i]->freq <= sortedNodes[i + 1]->freq);
     }
   }
 
@@ -156,6 +149,7 @@ struct DynamicWaveletHuff {
   }
 
   void swapNodes(int i, int j) {
+    swaps++;
     TNode *u = sortedNodes[i], *v = sortedNodes[j];
     TNode *anc = lca(u, v);
     fixBits(u, v, anc);
@@ -183,8 +177,6 @@ struct DynamicWaveletHuff {
   }
 
   void fixBits(TNode *a, TNode *b, TNode *lca) {
-    cout << "Swapping " << a->id << " and " << b->id << " with lca " << lca->id
-         << endl;
     auto [pathA, posA, bitA] = getLcaChanges(a, lca);
     auto [pathB, posB, bitB] = getLcaChanges(b, lca);
     for (int i = 0; i < (int)max(posA.size(), posB.size()); ++i) {
@@ -203,56 +195,40 @@ struct DynamicWaveletHuff {
     bool fromIdx = cur->chd[0] == a ? 0 : 1;
     vector<bool> path = {fromIdx};
     int numberOfChanges = a->bit.size() == 0 ? a->freq : a->bit.size();
+    totalChangedBits += numberOfChanges;
     vector<int> pos(numberOfChanges, 0);
     vector<int> newPos(numberOfChanges, 0);
-    cout << "Consertando " << a->id << endl;
     for (int i = 0; i < (int)pos.size(); ++i) {
       pos[i] = i;
-      // cout << pos[i] << ' ';
     }
-    // cout << endl;
     while (cur != lca) {
-      cout << "Olhando -> " << cur->id << endl;
       for (int i = 0; i < (int)pos.size(); ++i) {
         newPos[i] = cur->bit.select(pos[i], fromIdx);
       }
-      cout << cur->bit.size() << endl;
       for (int i = pos.size() - 1; i >= 0; --i) {
-        cout << "removendo " << newPos[i] << endl;
         cur->bit.remove(newPos[i]);
       }
       lst = cur;
       cur = cur->par;
-      cout << lst->id << ' ' << cur->id << endl;
       fromIdx = cur->chd[0] == lst ? 0 : 1;
       path.push_back(fromIdx);
       pos.swap(newPos);
     }
-    cout << "fixing lca" << endl;
     for (int i = 0; i < (int)pos.size(); ++i) {
       newPos[i] = lca->bit.select(pos[i], fromIdx);
     }
-    cout << "fixed" << endl;
     return {path, newPos, fromIdx ^ 1};
   }
 
   vector<pair<int, int>> getChanges(TNode *lca, const vector<int> &pos,
                                     bool bit) {
     vector<pair<int, int>> changes;
-    cout << "Generating changes for bit " << bit << endl;
-    for (int i = 0; i < (int)pos.size(); ++i) {
-      cout << pos[i] << ' ';
-    }
-    cout << endl;
     for (int i = 0; i < (int)pos.size(); ++i) {
       int nxtPos = lca->bit.rank(pos[i], bit);
       if (changes.empty() || changes.back().first != nxtPos)
         changes.emplace_back(nxtPos, 1);
       else
         changes.back().second++;
-    }
-    for (auto [v, c] : changes) {
-      cout << v << ' ' << c << endl;
     }
     return changes;
   }
@@ -263,18 +239,10 @@ struct DynamicWaveletHuff {
     vector<pair<int, int>> nxtChanges;
     for (int i = path.size() - 1; i > 0; --i) {
       cur = cur->chd[path[i]];
-      cout << "Fixing " << cur->id << endl;
-      cout << "Changing" << endl;
       bool nxtBit = path[i - 1];
       int count = 0;
-      for (int j = 0; j < (int)cur->bit.size(); ++j) {
-        cout << cur->bit[j];
-      }
-      cout << endl;
       for (auto [v, c] : changes) {
-        cout << v << ' ' << c << endl;
         while (c--) {
-          cout << nxtBit << ' ' << cur->bit.rank(v, nxtBit) << endl;
           int nxtPos = cur->bit.rank(v, nxtBit);
           if (nxtChanges.empty() || nxtChanges.back().first != nxtPos)
             nxtChanges.emplace_back(nxtPos, 1);
@@ -284,10 +252,6 @@ struct DynamicWaveletHuff {
           count++;
         }
       }
-      for (int j = 0; j < (int)cur->bit.size(); ++j) {
-        cout << cur->bit[j];
-      }
-      cout << endl;
       nxtChanges.swap(changes);
       nxtChanges.clear();
     }
@@ -391,11 +355,9 @@ struct DynamicWaveletHuff {
 pair<DynamicWaveletHuff, vector<vector<bool>>> encode(string t) {
   set<char> ab;
   for (auto c : t) ab.insert(c);
-  cout << endl;
   DynamicWaveletHuff wv(ab);
   vector<vector<bool>> code;
   for (auto c : t) {
-    cout << "adding " << c << endl;
     if (wv.hasChar(c)) {
       code.push_back(wv.charCode(c));
     } else {
@@ -407,25 +369,33 @@ pair<DynamicWaveletHuff, vector<vector<bool>>> encode(string t) {
     wv.update(c);
     wv.printHuff();
   }
-  for (auto c : ab) {
-    cout << c << ' ';
-  }
 
   return {wv, code};
 }
 
 int main() {
-  string txt = "some bigger text to test please go";
-  auto [wv, code] = encode(txt);
-  wv.printHuff();
-  wv.assertWavelet(txt);
-  for (auto v : code) {
-    for (auto b : v) {
-      cout << b;
+  for (auto testFile : filesystem::directory_iterator("./tests")) {
+    ifstream fs{testFile.path()};
+    string txt((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
+    set<char> ab;
+    for (auto c : txt) ab.insert(c);
+    DynamicWaveletHuff wv(ab);
+    swaps = 0;
+    totalChangedBits = 0;
+    cout << txt.size() << ' ' << ab.size() << endl;
+    auto start = chrono::high_resolution_clock::now();
+    for (auto c : txt) {
+      wv.update(c);
     }
-    cout << ' ';
+    auto end = chrono::high_resolution_clock::now();
+
+    chrono::duration<double, milli> timeMs = end - start;
+
+    cout << fixed << setprecision(9) << testFile.path() << " took "
+         << timeMs.count() << "ms"
+         << " with " << swaps << " swaps and " << totalChangedBits
+         << " changed bits" << endl;
+    wv.assertWavelet(txt);
   }
-  cout << endl;
-  cout << abacaba << ' ' << wv.nBits << endl;
   return 0;
 }
