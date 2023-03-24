@@ -4,3 +4,6 @@
 [submodule "dynhuff/hopscotch-map"]
 	path = dynhuff/hopscotch-map
 	url = git@github.com:Tessil/hopscotch-map.git
+[submodule "dynhuff/DYNAMIC-fast"]
+	path = dynhuff/DYNAMIC-fast
+	url = git@github.com:saskeli/DYNAMIC.git

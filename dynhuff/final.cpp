@@ -39,7 +39,7 @@ class TNode {
   char c;
   TNode *par, *chd[2];
   unordered_map<char, bool> alph;
-  dyn::suc_bv bit;
+  dyn::b_suc_bv bit;
 
   TNode(char _c = '\0', int _freq = 0) {
     id = nodeId++;
@@ -370,15 +370,19 @@ pair<DynamicWaveletHuff, vector<vector<bool>>> encode(string t) {
 }
 
 int main() {
+  vector<string> paths;
   for (auto testFile : filesystem::directory_iterator("./tests")) {
-    ifstream fs{testFile.path()};
+    paths.push_back(testFile.path());
+  }
+  sort(paths.begin(), paths.end());
+  for (auto testFile : paths) {
+    ifstream fs{testFile};
     string txt((istreambuf_iterator<char>(fs)), istreambuf_iterator<char>());
     set<char> ab;
     for (auto c : txt) ab.insert(c);
     DynamicWaveletHuff wv(ab);
     swaps = 0;
     totalChangedBits = 0;
-    cout << txt.size() << ' ' << ab.size() << endl;
     auto start = chrono::high_resolution_clock::now();
     for (auto c : txt) {
       wv.update(c);
@@ -387,8 +391,8 @@ int main() {
 
     chrono::duration<double, milli> timeMs = end - start;
 
-    cout << fixed << setprecision(9) << testFile.path() << " took "
-         << timeMs.count() << "ms"
+    cout << fixed << setprecision(5) << testFile << " took " << timeMs.count()
+         << "ms"
          << " with " << swaps << " swaps and " << totalChangedBits
          << " changed bits" << endl;
     wv.assertWavelet(txt);
