@@ -1,6 +1,6 @@
 #include <bits/stdc++.h>
 
-#include <dynamic/dynamic.hpp>
+#include <dynamic/modded.hpp>
 #include <filesystem>
 
 using namespace std;
@@ -39,7 +39,7 @@ class TNode {
   char c;
   TNode *par, *chd[2];
   unordered_map<char, bool> alph;
-  dyn::b_suc_bv bit;
+  dyn::suc_bv bit;
 
   TNode(char _c = '\0', int _freq = 0) {
     id = nodeId++;
