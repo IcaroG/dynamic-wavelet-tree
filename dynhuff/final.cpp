@@ -33,7 +33,8 @@ string mapToString(const unordered_map<char, int> &mp) {
          "}";
 }
 
-struct TNode {
+class TNode {
+ public:
   int id, freq;
   char c;
   TNode *par, *chd[2];
@@ -57,13 +58,8 @@ struct TNode {
   bool isLeaf() { return !chd[0] && !chd[1]; }
 };
 
-struct DynamicWaveletHuff {
-  int abSize, nBits;
-  unordered_map<char, TNode *> ab;
-  unordered_map<char, vector<bool>> rawCodes;
-  TNode *root, *nullNode;
-  deque<TNode *> sortedNodes;
-
+class DynamicWaveletHuff {
+ public:
   DynamicWaveletHuff(const set<char> &_ab) {
     abSize = _ab.size();
     nBits = 32 - __builtin_clz(abSize - 1);
@@ -102,6 +98,32 @@ struct DynamicWaveletHuff {
       i = j + 1;
     }
   }
+
+  void printHuff() {
+    cout << "------------------------" << endl;
+    printTree(root);
+    cout << "------------------------" << endl;
+  }
+
+  void assertWavelet(string &txt) { assertWaveletNode(root, txt); }
+
+  bool hasChar(const char c) { return ab.count(c); }
+
+  vector<bool> charCode(const char c) {
+    if (!ab.count(c)) {
+      return rawCodes[c];
+    }
+    return getCode(ab[c]);
+  }
+
+  vector<bool> nullCode() { return getCode(nullNode); }
+
+ private:
+  int abSize, nBits;
+  unordered_map<char, TNode *> ab;
+  unordered_map<char, vector<bool>> rawCodes;
+  TNode *root, *nullNode;
+  deque<TNode *> sortedNodes;
 
   void addBit(char c) {
     char goalChar = c;
@@ -291,12 +313,6 @@ struct DynamicWaveletHuff {
     printTree(cur->chd[1], level + 1);
   }
 
-  void printHuff() {
-    cout << "------------------------" << endl;
-    printTree(root);
-    cout << "------------------------" << endl;
-  }
-
   void assertWaveletNode(TNode *cur, string txt) {
     if (cur->isLeaf()) return;
     string s;
@@ -325,19 +341,6 @@ struct DynamicWaveletHuff {
       if (cur->chd[i] != NULL) assertWaveletNode(cur->chd[i], nextTxt[i]);
     }
   }
-
-  void assertWavelet(string &txt) { assertWaveletNode(root, txt); }
-
-  bool hasChar(const char c) { return ab.count(c); }
-
-  vector<bool> charCode(const char c) {
-    if (!ab.count(c)) {
-      return rawCodes[c];
-    }
-    return getCode(ab[c]);
-  }
-
-  vector<bool> nullCode() { return getCode(nullNode); }
 
   vector<bool> getCode(TNode *start) {
     TNode *cur = start;
