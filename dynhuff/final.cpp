@@ -21,7 +21,7 @@ vector<bool> binCode(int x, int nBits) {
   return ret;
 }
 
-string mapToString(const unordered_map<char, int> &mp) {
+string mapToString(const unordered_map<char, bool> &mp) {
   const string delimiter = ",";
   return "{" +
          accumulate(
@@ -38,7 +38,7 @@ class TNode {
   int id, freq;
   char c;
   TNode *par, *chd[2];
-  unordered_map<char, int> alph;
+  unordered_map<char, bool> alph;
   dyn::suc_bv bit;
 
   TNode(char _c = '\0', int _freq = 0) {
@@ -183,8 +183,6 @@ class DynamicWaveletHuff {
     parentV->setChild(u, posV);
     parentV->freq += 1;
     swap(sortedNodes[i], sortedNodes[j]);
-    fixAlph(u, anc, v->alph);
-    fixAlph(v, anc, u->alph);
   }
 
   TNode *lca(TNode *u, TNode *v) {
@@ -207,8 +205,8 @@ class DynamicWaveletHuff {
     }
     auto changesA = getChanges(lca, posA, bitA);
     auto changesB = getChanges(lca, posB, bitB);
-    fixDown(pathA, lca, changesB);
-    fixDown(pathB, lca, changesA);
+    fixDown(pathA, lca, changesB, b->alph, a->alph);
+    fixDown(pathB, lca, changesA, a->alph, b->alph);
   }
 
   tuple<vector<bool>, vector<int>, bool> getLcaChanges(TNode *a, TNode *lca) {
@@ -256,10 +254,22 @@ class DynamicWaveletHuff {
   }
 
   void fixDown(const vector<bool> &path, TNode *node,
-               vector<pair<int, int>> &changes) {
+               vector<pair<int, int>> &changes,
+               const unordered_map<char, bool> &keep,
+               const unordered_map<char, bool> &rem) {
     TNode *cur = node;
     vector<pair<int, int>> nxtChanges;
-    for (int i = path.size() - 1; i > 0; --i) {
+    for (int i = path.size() - 1; i >= 0; --i) {
+      bool changedTo = path[i];
+      if (i != (int)path.size() - 1) {
+        for (auto [v, c] : rem) {
+          cur->alph.erase(v);
+        }
+      }
+      for (auto [v, c] : keep) {
+        cur->alph[v] = changedTo;
+      }
+      if (i == 0) break;
       cur = cur->chd[path[i]];
       bool nxtBit = path[i - 1];
       int count = 0;
@@ -276,24 +286,6 @@ class DynamicWaveletHuff {
       }
       nxtChanges.swap(changes);
       nxtChanges.clear();
-    }
-  }
-
-  void fixAlph(TNode *node, TNode *lca, unordered_map<char, int> &rem) {
-    TNode *cur = node->par;
-    bool fromIdx = cur->chd[0] == node ? 0 : 1;
-    while (cur != lca) {
-      for (auto [c, v] : rem) {
-        cur->alph.erase(c);
-      }
-      for (auto [c, v] : node->alph) {
-        cur->alph[c] = fromIdx;
-      }
-      fromIdx = cur->par->chd[0] == cur ? 0 : 1;
-      cur = cur->par;
-    }
-    for (auto [c, v] : node->alph) {
-      lca->alph[c] = fromIdx;
     }
   }
 
@@ -361,6 +353,7 @@ pair<DynamicWaveletHuff, vector<vector<bool>>> encode(string t) {
   DynamicWaveletHuff wv(ab);
   vector<vector<bool>> code;
   for (auto c : t) {
+    cout << "adding " << c << endl;
     if (wv.hasChar(c)) {
       code.push_back(wv.charCode(c));
     } else {
