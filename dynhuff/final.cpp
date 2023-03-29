@@ -296,7 +296,7 @@ class DynamicWaveletHuff {
     string spaces(level * 2, ' ');
     string bitVecStr;
     for (int i = 0; i < (int)cur->bit.size(); ++i) {
-      bitVecStr += to_string(cur->bit[i]);
+      bitVecStr += to_string(cur->bit.at(i));
     }
     cout << spaces;
     printf("[id=%d freq=%d char=%c alph=%s bin=%s]\n", cur->id, cur->freq,
@@ -309,7 +309,7 @@ class DynamicWaveletHuff {
     if (cur->isLeaf()) return;
     string s;
     for (int i = 0; i < (int)cur->bit.size(); ++i) {
-      s += to_string(cur->bit[i]);
+      s += to_string(cur->bit.at(i));
     }
     if (cur->bit.size() != txt.size()) {
       printf("id = %d with wrong %s %s", cur->id, s.c_str(), txt.c_str());
