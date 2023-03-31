@@ -4,3 +4,6 @@
 [submodule "dynhuff/DYNAMIC"]
 	path = dynhuff/DYNAMIC
 	url = git@github.com:saskeli/DYNAMIC.git
+[submodule "dynhuff/ditvector"]
+	path = dynhuff/ditvector
+	url = git@github.com:zMoooooritz/ditvector.git

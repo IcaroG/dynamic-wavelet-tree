@@ -117,6 +117,7 @@ class Huff:
         return cnode
     
     def swap_nodes(self, i, j):
+        print('swapping', i, j)
         node_i: Node = self.sorted_nodes[i]
         node_j: Node = self.sorted_nodes[j]
         node_lca = self.lca(node_i, node_j)
@@ -310,7 +311,7 @@ class Huff:
         if not root:
             return
         print(level*"  ", end='')
-        print("[id=%d freq=%d char=%c alph=%s bin=%s]"%(root.id, root.freq, root.c, root.alph, root.bit.bin if root.bit != None else []))
+        print("[id=%d freq=%d char=%c]"%(root.id, root.freq, root.c))
         self.print_tree(root.chd[0], level+1)
         self.print_tree(root.chd[1], level+1)
         
@@ -357,7 +358,7 @@ def encode(txt, ab):
         else: 
             code = code + hc.null_code() + hc.char_code(txt[i]) + " "
         hc.update(txt[i])
-        # hc.print_huff()
+        hc.print_huff()
     return hc,code
         
 def decode(code, ab):
@@ -394,15 +395,20 @@ def decode(code, ab):
     return txt       
 
 
-files = [f for f in os.listdir(TEST_DIR) if os.path.isfile(os.path.join(TEST_DIR, f))]
-for f in files: 
-    txt = open(os.path.join(TEST_DIR, f), "r").read()
-    ab = list(set(txt))
-    start = timer()
-    hc, code = encode(txt, ab)
-    end = timer()
-    print("Took {:f}s to process {:s}, had a max distance of {:d} for an alphabet of size {:d}".format(end - start, f, MAX_DISTANCE_LCA, len(ab)))
-    hc.assert_wavelet(txt)
-    decoded = decode(code, ab)
-    # print("decoded txt =",decoded)
-    assert decoded == txt
+# files = [f for f in os.listdir(TEST_DIR) if os.path.isfile(os.path.join(TEST_DIR, f))]
+# for f in files: 
+#     txt = open(os.path.join(TEST_DIR, f), "r").read()
+#     ab = list(set(txt))
+#     start = timer()
+#     hc, code = encode(txt, ab)
+#     end = timer()
+#     print("Took {:f}s to process {:s}, had a max distance of {:d} for an alphabet of size {:d}".format(end - start, f, MAX_DISTANCE_LCA, len(ab)))
+#     hc.assert_wavelet(txt)
+#     decoded = decode(code, ab)
+#     # print("decoded txt =",decoded)
+#     assert decoded == txt
+
+txt = "abrac"
+ab = list(set(txt))
+hc, code = encode(txt, ab)
+print(code)

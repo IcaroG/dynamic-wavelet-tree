@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
-// #include <dynamic/modded.hpp>
-#include <bit_vector/bv.hpp>
+//#include <dynamic/modded.hpp>
+#include <bit_vector.cpp>
 #include <filesystem>
 
 using namespace std;
@@ -10,8 +10,8 @@ const char NULL_CHAR = 128;
 
 int swaps = 0;
 int totalChangedBits = 0;
-long long operations = 0;
-chrono::duration<double, milli> maxtime = chrono::duration<double, milli>(0);
+int zid = 4;
+chrono::duration<double, milli> maxtime[10];
 int nodeId = 0;
 
 vector<bool> binCode(int x, int nBits) {
@@ -26,14 +26,14 @@ vector<bool> binCode(int x, int nBits) {
 
 string mapToString(const unordered_map<char, bool> &mp) {
   const string delimiter = ",";
-  return "{" +
-         accumulate(
-             mp.begin(), mp.end(), string(),
-             [delimiter](const string &s, const pair<const char, int> &p) {
-               return s + (s.empty() ? string() : delimiter) + p.first + ": " +
-                      to_string(p.second);
-             }) +
-         "}";
+  return "{";
+        //  accumulate(
+        //      mp.begin(), mp.end(), string(),
+        //      [delimiter](const string &s, const pair<const char, int> &p) {
+        //        return s + (s.empty() ? string() : delimiter) + p.first + ": " +
+        //               to_string(p.second);
+        //      }) +
+        //  "}";
 }
 
 class TNode {
@@ -42,9 +42,8 @@ class TNode {
   char c;
   TNode *par, *chd[2];
   unordered_map<char, bool> alph;
-  bv::small_bv<16, 16384, 32> bit1, bit0;
-  // dyn::suc_bv bit;
-  // dyn::succinct_bitvector<dyn::spsi<dyn::packed_bit_vector,8192,16>> bit;
+  BitVector<256> bit;
+  //dyn::suc_bv bit;
 
   TNode(char _c = '\0', int _freq = 0) {
     id = nodeId++;
@@ -141,7 +140,7 @@ class DynamicWaveletHuff {
       if (!cur->alph.count(c)) {
         cur->alph[c] = nextChild;
       }
-      insert(cur, cur->bit1.size(), nextChild);
+      cur->bit.insert(cur->bit.size(), nextChild);
       cur = cur->chd[nextChild];
     }
   }
@@ -161,7 +160,7 @@ class DynamicWaveletHuff {
     newPar->setChild(newNode, 1);
     newPar->alph.emplace(NULL_CHAR, 0);
     newPar->alph.emplace(c, 1);
-    insert(newPar, 0, 1);
+    newPar->bit.insert(0, 1);
     if (nullNodeParent != NULL) {
       nullNodeParent->setChild(newPar,
                                nullNodeParent->chd[0] == nullNode ? 0 : 1);
@@ -202,19 +201,31 @@ class DynamicWaveletHuff {
   }
 
   void fixBits(TNode *a, TNode *b, TNode *lca) {
+    auto start = chrono::high_resolution_clock::now();
     auto [pathA, posA, bitA] = getLcaChanges(a, lca);
     auto [pathB, posB, bitB] = getLcaChanges(b, lca);
+    chrono::duration<double, milli> timeMs = chrono::high_resolution_clock::now() - start;
+    maxtime[0] = maxtime[0] + timeMs;
+
+    start = chrono::high_resolution_clock::now();
     for (int i = 0; i < (int)max(posA.size(), posB.size()); ++i) {
-      if (i < (int)posA.size()) set(lca, posA[i], bitA);
-      if (i < (int)posB.size()) set(lca, posB[i], bitB);
+      if (i < (int)posA.size()) lca->bit.flip(posA[i]);
+      if (i < (int)posB.size()) lca->bit.flip(posB[i]);
     }
-      auto start = chrono::high_resolution_clock::now();
+    timeMs = chrono::high_resolution_clock::now() - start;
+    maxtime[1] = maxtime[1] + timeMs;
+
+    start = chrono::high_resolution_clock::now();
     auto changesA = getChanges(lca, posA, bitA);
     auto changesB = getChanges(lca, posB, bitB);
-      chrono::duration<double, milli> timeMs = chrono::high_resolution_clock::now() - start;
-      maxtime = maxtime + timeMs;
+    timeMs = chrono::high_resolution_clock::now() - start;
+    maxtime[2] = maxtime[2] + timeMs;
+
+    start = chrono::high_resolution_clock::now();
     fixDown(pathA, lca, changesB, b->alph, a->alph);
     fixDown(pathB, lca, changesA, a->alph, b->alph);
+    timeMs = chrono::high_resolution_clock::now() - start;
+    maxtime[3] = maxtime[3] + timeMs;
   }
 
   tuple<vector<bool>, vector<int>, bool> getLcaChanges(TNode *a, TNode *lca) {
@@ -222,7 +233,7 @@ class DynamicWaveletHuff {
     TNode *lst = a;
     bool fromIdx = cur->chd[0] == a ? 0 : 1;
     vector<bool> path = {fromIdx};
-    int numberOfChanges = a->bit1.size() == 0 ? a->freq : a->bit1.size();
+    int numberOfChanges = a->bit.size() == 0 ? a->freq : a->bit.size();
     totalChangedBits += numberOfChanges;
     vector<int> pos(numberOfChanges, 0);
     vector<int> newPos(numberOfChanges, 0);
@@ -230,25 +241,24 @@ class DynamicWaveletHuff {
       pos[i] = i;
     }
     while (cur != lca) {
-      if(pos.size() * 64 >= cur->bit1.size()) {
-        int c = 0;
-        int k = 0;
-        for(int i = 0; i < (int)cur->bit1.size(); ++i) {
-          if(cur->bit1.at(i) == fromIdx) {
-            if(c == pos[k]) {
-              newPos[k] = i;
-              k++;
-            }
-            c++;
-          }
-        }
-      } else {
+      // if(pos.size() * 10 >= cur->bit.size()) {
+      //   int c = 0, k = 0;
+      //   for(int i = 0; i < (int)cur->bit.size(); ++i) {
+      //     if(cur->bit.at(i) == fromIdx) {
+      //       if(c == pos[k]) {
+      //         newPos[k] = i;
+      //         k++;
+      //       }
+      //       c++;
+      //     }
+      //   }
+      // } else {
         for (int i = 0; i < (int)pos.size(); ++i) {
-          newPos[i] = select(cur, pos[i], fromIdx);
+          newPos[i] = cur->bit.select(pos[i] + 1, fromIdx);
         }
-      }
+      // }
       for (int i = pos.size() - 1; i >= 0; --i) {
-        remove(cur, newPos[i]);
+        cur->bit.del(newPos[i]);
       }
       lst = cur;
       cur = cur->par;
@@ -256,23 +266,22 @@ class DynamicWaveletHuff {
       path.push_back(fromIdx);
       pos.swap(newPos);
     }
-    if(pos.size() * 64 >= lca->bit1.size()) {
-      int c = 0;
-      int k = 0;
-      for(int i = 0; i < (int)lca->bit1.size(); ++i) {
-        if(lca->bit1.at(i) == fromIdx) {
-          if(c == pos[k]) {
-            newPos[k] = i;
-            k++;
-          }
-          c++;
-        }
-      }
-    } else {
+    // if(pos.size() * 10 >= lca->bit.size()) {
+    //   int c = 0,  k = 0;
+    //   for(int i = 0; i < (int)lca->bit.size(); ++i) {
+    //     if(lca->bit.at(i) == fromIdx) {
+    //       if(c == pos[k]) {
+    //         newPos[k] = i;
+    //         k++;
+    //       }
+    //       c++;
+    //     }
+    //   }
+    // } else {
       for (int i = 0; i < (int)pos.size(); ++i) {
-        newPos[i] = select(lca, pos[i], fromIdx);
+        newPos[i] = lca->bit.select(pos[i] + 1, fromIdx);
       }
-    }
+    // }
     return {path, newPos, fromIdx ^ 1};
   }
 
@@ -280,12 +289,13 @@ class DynamicWaveletHuff {
                                     bool bit) {
     vector<pair<int, int>> changes;
     for (int i = 0; i < (int)pos.size(); ++i) {
-      int nxtPos = rank(lca, pos[i], bit);
+      int nxtPos = lca->bit.rank(pos[i], bit);
       if (changes.empty() || changes.back().first != nxtPos)
         changes.emplace_back(nxtPos, 1);
       else
         changes.back().second++;
     }
+    
     return changes;
   }
 
@@ -308,16 +318,14 @@ class DynamicWaveletHuff {
       if (i == 0) break;
       cur = cur->chd[path[i]];
       bool nxtBit = path[i - 1];
-      int count = 0;
       for (auto [v, c] : changes) {
+        int nxtPos = cur->bit.rank(v, nxtBit);
         while (c--) {
-          int nxtPos = rank(cur, v, nxtBit);
           if (nxtChanges.empty() || nxtChanges.back().first != nxtPos)
             nxtChanges.emplace_back(nxtPos, 1);
           else
             nxtChanges.back().second++;
-          insert(cur, v, nxtBit);
-          count++;
+          cur->bit.insert(v, nxtBit);
         }
       }
       nxtChanges.swap(changes);
@@ -331,8 +339,8 @@ class DynamicWaveletHuff {
     }
     string spaces(level * 2, ' ');
     string bitVecStr;
-    for (int i = 0; i < (int)cur->bit1.size(); ++i) {
-      bitVecStr += to_string(cur->bit1.at(i));
+    for (int i = 0; i < (int)cur->bit.size(); ++i) {
+      bitVecStr += to_string(cur->bit.access(i));
     }
     cout << spaces;
     printf("[id=%d freq=%d char=%c alph=%s bin=%s]\n", cur->id, cur->freq,
@@ -344,10 +352,10 @@ class DynamicWaveletHuff {
   void assertWaveletNode(TNode *cur, string txt) {
     if (cur->isLeaf()) return;
     string s;
-    for (int i = 0; i < (int)cur->bit1.size(); ++i) {
-      s += to_string(cur->bit1.at(i));
+    for (int i = 0; i < (int)cur->bit.size(); ++i) {
+      s += to_string(cur->bit.access(i));
     }
-    if (cur->bit1.size() != txt.size()) {
+    if (cur->bit.size() != txt.size()) {
       printf("id = %d with wrong %s %s", cur->id, s.c_str(), txt.c_str());
       cout << endl;
       assert(false);
@@ -380,31 +388,6 @@ class DynamicWaveletHuff {
     }
     reverse(code.begin(), code.end());
     return code;
-  }
-
-  void insert(TNode *cur, int pos, bool value) {
-    cur->bit0.insert(pos, 1^value);
-    cur->bit1.insert(pos, value);
-  }
-
-  void remove(TNode *cur, int pos) {
-    cur->bit0.remove(pos);
-    cur->bit1.remove(pos);
-  }
-
-  int rank(TNode *cur, int pos, bool value) {
-    if(value) return cur->bit1.rank(pos);
-    else return cur->bit0.rank(pos);
-  }
-
-  int select(TNode *cur, int pos, bool value) {
-    if(value) return cur->bit1.select(pos);
-    else return cur->bit0.select(pos);
-  }
-
-  void set(TNode *cur, int pos, bool value) {
-    cur->bit0.set(pos, 1^value);
-    cur->bit1.set(pos, value);
   }
 };
 
@@ -444,7 +427,7 @@ int main() {
     DynamicWaveletHuff wv(ab);
     swaps = 0;
     totalChangedBits = 0;
-    maxtime = chrono::duration<double, milli>(0);
+    for(int i = 0; i < zid; ++i) maxtime[i] = chrono::duration<double, milli>(0);
     auto start = chrono::high_resolution_clock::now();
     for (auto c : txt) {
       wv.update(c);
@@ -456,7 +439,11 @@ int main() {
     cout << fixed << setprecision(5) << testFile << " took " << timeMs.count()
          << "ms"
          << " with " << swaps << " swaps and " << totalChangedBits
-         << " changed bits " << operations << " " << maxtime.count() << endl;
+         << " changed bits" << endl;
+    for(int i = 0; i < zid; ++i) {
+      cout << maxtime[i].count() << ' ';
+    }
+    cout << endl;
     wv.assertWavelet(txt);
   }
   return 0;
