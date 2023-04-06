@@ -1,9 +1,3 @@
-[submodule "dynhuff/hopscotch-map"]
-	path = dynhuff/hopscotch-map
-	url = git@github.com:Tessil/hopscotch-map.git
-[submodule "dynhuff/DYNAMIC"]
-	path = dynhuff/DYNAMIC
-	url = git@github.com:saskeli/DYNAMIC.git
-[submodule "dynhuff/ditvector"]
-	path = dynhuff/ditvector
-	url = git@github.com:zMoooooritz/ditvector.git
+[submodule "dynhuff/bit_vector"]
+	path = dynhuff/bit_vector
+	url = git@github.com:saskeli/bit_vector.git
