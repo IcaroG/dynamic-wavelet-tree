@@ -1,0 +1,14 @@
+./tests\dna.10000 took 9.20000ms with 72 swaps and 196331 changed bits and alph size equal to 4
+./tests\dna.50000 took 473.00410ms with 258 swaps and 9152145 changed bits and alph size equal to 4
+./tests\dna.100000 took 668.92080ms with 308 swaps and 12887742 changed bits and alph size equal to 4
+./tests\dna.1000000 took 2461.36750ms with 400 swaps and 47653798 changed bits and alph size equal to 4
+
+./tests\english.10000 took 93.50320ms with 2169 swaps and 887493 changed bits and alph size equal to 81
+./tests\english.50000 took 282.96190ms with 3734 swaps and 2721971 changed bits and alph size equal to 87
+./tests\english.100000 took 580.36580ms with 4515 swaps and 5396661 changed bits and alph size equal to 90cd
+./tests\english.1000000 took 7050.97970ms with 7936 swaps and 65173480 changed bits and alph size equal to 106
+
+./tests\proteins.10000 took 36.86690ms with 817 swaps and 599494 changed bits and alph size equal to 20
+./tests\proteins.50000 took 201.32920ms with 1046 swaps and 2786206 changed bits and alph size equal to 20
+./tests\proteins.100000 took 335.43120ms with 1146 swaps and 5182571 changed bits and alph size equal to 20
+./tests\proteins.1000000 took 5504.76300ms with 1417 swaps and 48987888 changed bits and alph size equal to 21

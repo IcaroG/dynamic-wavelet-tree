@@ -9,8 +9,6 @@ const char NULL_CHAR = 127;
 
 int swaps = 0;
 int totalChangedBits = 0;
-int zid = 6;
-chrono::duration<double, milli> maxtime[10];
 int nodeId = 0;
 
 vector<bool> binCode(int x, int nBits) {
@@ -204,7 +202,6 @@ class DynamicWaveletHuff {
     auto [pathA, posA, bitA] = getLcaChanges(a, lca);
     auto [pathB, posB, bitB] = getLcaChanges(b, lca);
     chrono::duration<double, milli> timeMs = chrono::high_resolution_clock::now() - start;
-    maxtime[0] = maxtime[0] + timeMs;
 
     start = chrono::high_resolution_clock::now();
     for (int i = 0; i < (int)max(posA.size(), posB.size()); ++i) {
@@ -212,19 +209,16 @@ class DynamicWaveletHuff {
       if (i < (int)posB.size()) lca->bit.set(posB[i], bitB);
     }
     timeMs = chrono::high_resolution_clock::now() - start;
-    maxtime[1] = maxtime[1] + timeMs;
 
     start = chrono::high_resolution_clock::now();
     auto changesA = getChanges(lca, posA, bitA);
     auto changesB = getChanges(lca, posB, bitB);
     timeMs = chrono::high_resolution_clock::now() - start;
-    maxtime[2] = maxtime[2] + timeMs;
 
     start = chrono::high_resolution_clock::now();
     fixDown(pathA, lca, changesB, b->alph, a->alph);
     fixDown(pathB, lca, changesA, a->alph, b->alph);
     timeMs = chrono::high_resolution_clock::now() - start;
-    maxtime[3] = maxtime[3] + timeMs;
   }
 
   tuple<vector<bool>, vector<int>, bool> getLcaChanges(TNode *a, TNode *lca) {
@@ -233,15 +227,16 @@ class DynamicWaveletHuff {
     bool fromIdx = cur->chd[0] == a ? 0 : 1;
     vector<bool> path = {fromIdx};
     int numberOfChanges = a->bit.size() == 0 ? a->freq : a->bit.size();
-    totalChangedBits += numberOfChanges;
     vector<int> pos(numberOfChanges, 0);
     vector<int> newPos(numberOfChanges, 0);
+    totalChangedBits += pos.size();
     for (int i = 0; i < (int)pos.size(); ++i) {
       pos[i] = i;
     }
     auto start = chrono::high_resolution_clock::now();
     while (cur != lca) {
       fastMultiSelect(cur, pos, newPos, fromIdx);
+      totalChangedBits += pos.size();
       for (int i = pos.size() - 1; i >= 0; --i) {
         cur->bit.remove(newPos[i]);
       }
@@ -252,12 +247,10 @@ class DynamicWaveletHuff {
       pos.swap(newPos);
     }
     chrono::duration<double, milli> timeMs = chrono::high_resolution_clock::now() - start;
-    maxtime[4] = maxtime[4] + timeMs;
     
     start = chrono::high_resolution_clock::now();
     fastMultiSelect(lca, pos, newPos, fromIdx);
     timeMs = chrono::high_resolution_clock::now() - start;
-    maxtime[5] = maxtime[5] + timeMs;
     return {path, newPos, fromIdx ^ 1};
   }
 
@@ -284,6 +277,7 @@ class DynamicWaveletHuff {
                                     bool bit) {
     vector<pair<int, int>> changes;
     int nxtPos = -1;
+    totalChangedBits += pos.size();
     for (int i = 0; i < (int)pos.size(); ++i) {
       if(nxtPos == -1) {
         nxtPos = lca->bit.rank(bit, pos[i]);
@@ -427,7 +421,6 @@ int main() {
     DynamicWaveletHuff wv(ab);
     swaps = 0;
     totalChangedBits = 0;
-    for(int i = 0; i < zid; ++i) maxtime[i] = chrono::duration<double, milli>(0);
     auto start = chrono::high_resolution_clock::now();
     for (auto c : txt) {
       wv.update(c);
@@ -435,14 +428,10 @@ int main() {
     auto end = chrono::high_resolution_clock::now();
 
     chrono::duration<double, milli> timeMs = end - start;
-
     cout << fixed << setprecision(5) << testFile << " took " << timeMs.count()
          << "ms"
          << " with " << swaps << " swaps and " << totalChangedBits
-         << " changed bits" << endl;
-    for(int i = 0; i < zid; ++i) {
-      cout << maxtime[i].count() << ' ';
-    }
+         << " changed bits and alph size equal to " << ab.size();
     cout << endl;
     wv.assertWavelet(txt);
   }
