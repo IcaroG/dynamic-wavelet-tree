@@ -417,7 +417,7 @@ int main() {
     auto end = chrono::high_resolution_clock::now();
 
     chrono::duration<double, milli> timeMs = end - start;
-    wv.printHuff();
+    
     cout << fixed << setprecision(5) << testFile << " took " << timeMs.count()
          << "ms"
          << " with " << swaps << " swaps and " << totalChangedBits
