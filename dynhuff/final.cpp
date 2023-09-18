@@ -35,21 +35,25 @@ string mapToString(const unordered_map<char, bool> &mp) {
   //        "}";
 }
 
+int offset = 0;
+
 class TNode {
  public:
   int id, freq;
+  int revindex;
   char c;
   TNode *par, *chd[2];
   unordered_map<char, bool> alph;
   bv::small_bv<32, 38400, 16> bit;
 
-  TNode(char _c = '\0', int _freq = 0) {
+  TNode(char _c = '\0', int _freq = 0, int revid = 0) {
     id = nodeId++;
     c = _c;
     freq = _freq;
     par = NULL;
     chd[0] = chd[1] = NULL;
     if (_c != '\0') alph.emplace(c, -1);
+    revindex = revid - offset;
   }
 
   void setChild(TNode *newChd, int pos) {
@@ -79,11 +83,9 @@ class DynamicWaveletHuff {
     addBit(c);
     TNode *nodeUpdate = updateLeaf(c);
     int n = sortedNodes.size();
-    for (int i = 0, j = 0; i < n && nodeUpdate != NULL;) {
-      if (sortedNodes[i] != nodeUpdate) {
-        i++;
-        continue;
-      }
+    int st = nodeUpdate->revindex + offset;
+    //cout << st << endl;
+    for (int i = st, j = st; i < n && nodeUpdate != NULL;) {
       j = i + 1;
       while (j < n && sortedNodes[j]->freq == sortedNodes[i]->freq - 1) j++;
       j -= 1;
@@ -97,7 +99,9 @@ class DynamicWaveletHuff {
         }
         nodeUpdate = nodeUpdate->par;
       }
-      i = j + 1;
+      if(nodeUpdate != NULL) {
+        i = nodeUpdate->revindex + offset;
+      }
     }
   }
 
@@ -150,10 +154,12 @@ class DynamicWaveletHuff {
       cur->freq++;
       return cur;
     }
-    TNode *newNode = new TNode(c, 1);
+    offset += 2;
+    TNode *newNode = new TNode(c, 1, 1);
     ab[c] = newNode;
     TNode *nullNodeParent = nullNode->par;
-    TNode *newPar = new TNode();
+    TNode *newPar = new TNode('\0', 0, 2);
+    nullNode->revindex = -offset;
     newPar->setChild(nullNode, 0);
     newPar->setChild(newNode, 1);
     newPar->alph.emplace(NULL_CHAR, 0);
@@ -184,6 +190,7 @@ class DynamicWaveletHuff {
     parentU->setChild(v, posU);
     parentV->setChild(u, posV);
     parentV->freq += 1;
+    swap(sortedNodes[i]->revindex, sortedNodes[j]->revindex);
     swap(sortedNodes[i], sortedNodes[j]);
   }
 
@@ -417,7 +424,7 @@ int main() {
     auto end = chrono::high_resolution_clock::now();
 
     chrono::duration<double, milli> timeMs = end - start;
-    
+
     cout << fixed << setprecision(5) << testFile << " took " << timeMs.count()
          << "ms"
          << " with " << swaps << " swaps and " << totalChangedBits

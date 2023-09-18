@@ -1,18 +1,23 @@
-./tests\dna.10000 took 9.20000ms with 72 swaps and 196331 changed bits and alph size equal to 4
-./tests\dna.50000 took 473.00410ms with 258 swaps and 9152145 changed bits and alph size equal to 4
-./tests\dna.100000 took 668.92080ms with 308 swaps and 12887742 changed bits and alph size equal to 4
-./tests\dna.500000 took 2260.50790ms with 393 swaps and 42864207 changed bits and alph size equal to 4
-./tests\dna.1000000 took 2461.36750ms with 400 swaps and 47653798 changed bits and alph size equal to 4
+./tests\dna.10000 took 7.79240ms with 72 swaps and 196331 changed bits and alph size equal to 4
+./tests\dna.50000 took 437.06030ms with 258 swaps and 9152145 changed bits and alph size equal to 4
+./tests\dna.100000 took 630.80000ms with 308 swaps and 12887742 changed bits and alph size equal to 4
+./tests\dna.500000 took 1983.54200ms with 393 swaps and 42864207 changed bits and alph size equal to 4
+./tests\dna.1000000 took 2316.17620ms with 400 swaps and 47653798 changed bits and alph size equal to 4
+./tests\dna.2000000 took 3109.91780ms with 409 swaps and 62806019 changed bits and alph size equal to 4
+./tests\dna.3000000 took 17917.04060ms with 553 swaps and 403465839 changed bits and alph size equal to 4
 
-./tests\english.10000 took 93.50320ms with 2169 swaps and 887493 changed bits and alph size equal to 81
-./tests\english.50000 took 282.96190ms with 3734 swaps and 2721971 changed bits and alph size equal to 87
-./tests\english.100000 took 580.36580ms with 4515 swaps and 5396661 changed bits and alph size equal to 90
-./tests\english.500000 took 2483.14710ms with 6168 swaps and 17437093 changed bits and alph size equal to 94
-./tests\english.1000000 took 7050.97970ms with 7936 swaps and 65173480 changed bits and alph size equal to 106
+./tests\english.10000 took 80.15660ms with 2169 swaps and 887493 changed bits and alph size equal to 81
+./tests\english.50000 took 236.01970ms with 3734 swaps and 2721971 changed bits and alph size equal to 87
+./tests\english.100000 took 480.87010ms with 4515 swaps and 5396661 changed bits and alph size equal to 90
+./tests\english.500000 took 1958.99540ms with 6168 swaps and 17437093 changed bits and alph size equal to 94
+./tests\english.1000000 took 6020.87990ms with 7936 swaps and 65173480 changed bits and alph size equal to 106
+./tests\english.2000000 took 14985.71340ms with 8956 swaps and 118227207 changed bits and alph size equal to 107
+./tests\english.3000000 took 20987.89810ms with 9978 swaps and 187791347 changed bits and alph size equal to 110
 
-./tests\proteins.10000 took 36.86690ms with 817 swaps and 599494 changed bits and alph size equal to 20
-./tests\proteins.50000 took 201.32920ms with 1046 swaps and 2786206 changed bits and alph size equal to 20
-./tests\proteins.100000 took 335.43120ms with 1146 swaps and 5182571 changed bits and alph size equal to 20
-./tests\proteins.500000 took 1649.65130ms with 1309 swaps and 21202639 changed bits and alph size equal to 20
-./tests\proteins.1000000 took 5504.76300ms with 1417 swaps and 48987888 changed bits and alph size equal to 21
-
+./tests\proteins.10000 took 32.70040ms with 817 swaps and 599494 changed bits and alph size equal to 20
+./tests\proteins.50000 took 175.98720ms with 1046 swaps and 2786206 changed bits and alph size equal to 20
+./tests\proteins.100000 took 293.82690ms with 1146 swaps and 5182571 changed bits and alph size equal to 20
+./tests\proteins.500000 took 1439.92740ms with 1309 swaps and 21202639 changed bits and alph size equal to 20
+./tests\proteins.1000000 took 5066.84790ms with 1417 swaps and 48987888 changed bits and alph size equal to 21
+./tests\proteins.2000000 took 14497.23730ms with 1529 swaps and 110578342 changed bits and alph size equal to 23
+./tests\proteins.3000000 took 17472.64620ms with 1562 swaps and 135297287 changed bits and alph size equal to 23

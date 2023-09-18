@@ -1,6 +1,6 @@
 CL = $(shell getconf LEVEL1_DCACHE_LINESIZE)
 
-CFLAGS = -std=c++23 -Wall -Wextra -Wshadow -pedantic -DCACHE_LINE=$(CL) -march=native		
+CFLAGS = -fno-omit-frame-pointer -std=c++23 -Wall -Wextra -Wshadow -Wno-unused-result -Wno-sign-compare -Wno-char-subscripts -pedantic -DCACHE_LINE=$(CL) -march=native		
 
 INCLUDE = -isystem bit_vector/
 
